@@ -39,3 +39,24 @@ print("Gurobi is working! Version:", gp.gurobi.version())
 ```
 deactivate
 ```
+
+# For the assignment 
+## 1. Source gurobi
+```
+source gurobi_env/bin/activate
+```
+
+## 2. Install necessary libraries
+```
+pip install gurobipy numpy pandas matplotlib
+```
+
+## 3. Run each problem
+
+```
+python problem1.py
+```
+
+```
+python problem2.py
+```
