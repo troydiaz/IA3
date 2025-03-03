@@ -43,17 +43,17 @@ deactivate
 
 # To Run Each Problem For The Assignment
 
-## 1. Source gurobi
+## 1. Source Gurobi
 ```
 source gurobi_env/bin/activate
 ```
 
-## 2. Install necessary libraries
+## 2. Install Necessary Libraries
 ```
 pip install gurobipy numpy pandas matplotlib
 ```
 
-## 3. Run each problem
+## 3. Run Each Problem
 ```
 python problem1.py
 ```
