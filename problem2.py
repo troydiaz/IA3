@@ -5,22 +5,21 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def main():
-    # Read the CSV file with a semicolon delimiter
+    # Read the CSV file
     data = pd.read_csv("Corvallis.csv", delimiter=';')
     print("CSV columns found:", data.columns.tolist())
 
-    # - "average" for the average daily temperature.
-    # - "day.1" for the number of days since May 1, 1952 (the last column).
+    # average for the average daily temperature
+    # day.1 for days since May 1, 1952 
     if "average" in data.columns and "day.1" in data.columns:
         T_vals = data["average"].values
         d_vals = data["day.1"].values
     else:
-        # If the expected names are not found, use the last two columns as fallback.
+        # fallback if col names are not found
         T_vals = data.iloc[:, -2].values
         d_vals = data.iloc[:, -1].values
         print("Warning: Using the last two columns as temperature and day data respectively.")
     
-    # Create the Gurobi model
     m = gp.Model("problem2_minmax")
     
     # T(d) = x0 + x1*d + x2*cos(2π*d/365.25) + x3*sin(2π*d/365.25)
@@ -31,13 +30,13 @@ def main():
     x3 = m.addVar(lb=-GRB.INFINITY, name="x3")
     x4 = m.addVar(lb=-GRB.INFINITY, name="x4")
     x5 = m.addVar(lb=-GRB.INFINITY, name="x5")
-    t  = m.addVar(lb=0,             name="t")  # t is the maximum absolute deviation
+    t  = m.addVar(lb=0,             name="t") 
     
-    # Objective: minimize t
     m.setObjective(t, GRB.MINIMIZE)
     
-    # Add constraints for each data point (d_i, T_i)
-    # Ensure that formula is used: |predicted - T_i| <= t.
+
+    # Constraints 
+    # |predicted - T_i| <= t.
     for d_i, T_i in zip(d_vals, T_vals):
         cos_year  = np.cos(2 * np.pi * d_i / 365.25)
         sin_year  = np.sin(2 * np.pi * d_i / 365.25)
@@ -53,8 +52,7 @@ def main():
         
         m.addConstr(pred - T_i <= t)
         m.addConstr(-(pred - T_i) <= t)
-    
-    # Solve the model
+
     m.optimize()
     
     # Print the results
@@ -67,14 +65,15 @@ def main():
     print("x5 =", x5.X)
     print("Minimized max deviation (t) =", t.X)
     
-    # Compute the warming/cooling trend in °C per century (x1 is in °C per day)
+    # Compute the warming/cooling trend in °C per century
+    # Since x1 represents °C per day, multiply by 365.25 * 100 to get per century
     trend_per_century = x1.X * 365.25 * 100
     if x1.X > 0:
         print(f"Warming trend: {trend_per_century:.4f} °C per century.")
     else:
         print(f"Cooling trend: {trend_per_century:.4f} °C per century.")
     
-    # Plotting: show raw data, the best-fit curve, and the linear trend.
+    # Plotting: show original data, the best-fit curve, and the linear trend.
     plt.figure(figsize=(10, 6))
     plt.scatter(d_vals, T_vals, color="blue", s=5, label="Raw Data")
     

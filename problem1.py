@@ -11,25 +11,23 @@ def main():
     # Create the Gurobi model
     m = gp.Model("problem1_minmax")
 
-    # a = slope, b = intercept, t = max deviation
+    # a = slope, b = intercept, t = max deviation 
     a = m.addVar(lb=-GRB.INFINITY, name="a")
     b = m.addVar(lb=-GRB.INFINITY, name="b")
-    t = m.addVar(lb=0,             name="t")  # t >= 0
+    t = m.addVar(lb=0,             name="t") 
 
-    # Objective: minimize t
     m.setObjective(t, GRB.MINIMIZE)
 
-    # Add constraints for each data point to enforce equation |a*x + b - y| <= t
+    # |a*x + b - y| <= t
     for i, (xi, yi) in enumerate(points):
         # a*xi + b - yi <= t
         m.addConstr(a*xi + b - yi <= t, name=f"upper_{i}")
         # -(a*xi + b - yi) <= t  =>  yi - (a*xi + b) <= t
         m.addConstr(-(a*xi + b - yi) <= t, name=f"lower_{i}")
 
-    # Solve the model
     m.optimize()
 
-    # Retrieve and print the solution
+    # Solution
     a_opt = a.X
     b_opt = b.X
     t_opt = t.X
@@ -37,14 +35,16 @@ def main():
     print(f"Optimal line: y = {a_opt} * x + {b_opt}")
     print(f"Minimized max deviation (t): {t_opt}")
 
-    # Plot the data and the best-fit line
+    # Plot the original data
     plt.figure()
     plt.scatter(x_vals, y_vals, color='blue', label='Data Points')
     
+    # Generate best fitted line
     x_line = range(min(x_vals), max(x_vals)+1)
     y_line = [a_opt * x + b_opt for x in x_line]
     plt.plot(x_line, y_line, color='red', label='MinMax Line')
 
+    # Labels and legend
     plt.title("Problem 1: Minimize Maximum Absolute Deviation")
     plt.xlabel("x")
     plt.ylabel("y")
